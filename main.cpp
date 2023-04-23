@@ -134,7 +134,7 @@ read_value_result read_value(const char* it, setting_type type)
         auto bool_value = read_be<std::uint32_t>(it);
         return {
             .value{.integer_value{static_cast<std::int32_t>(bool_value)}},
-           .read_size{4},
+            .read_size{4},
         };
     }
 
@@ -175,8 +175,21 @@ int main(int argc, char** argv)
     }
 
     std::string compressed = read_full_file(argv[1]);
+
+    if (compressed.size() < 8) {
+        std::cerr << "No compression file header.\n";
+        return 2;
+    }
+
     auto compressed_size = read_le<std::uint32_t>(compressed.data());
     auto decompressed_size = read_le<std::uint32_t>(compressed.data() + 4);
+
+    if (compressed.size() - 8 != compressed_size) {
+        std::cerr << "Bad compressed size.\n";
+        std::cerr << "  Expected: " << compressed_size << '\n';
+        std::cerr << "  Actual  : " << compressed.size() << '\n';
+        return 2;
+    }
 
     std::string output_buffer(decompressed_size, '\0');
     auto actual_size = fastlz_decompress(
