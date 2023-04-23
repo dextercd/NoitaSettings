@@ -22,7 +22,7 @@ add_library(fastlz
     ${fastlz_SOURCE_DIR}/fastlz.h
 )
 
-target_include_directories(fastlz PUBLIC FastLZ)
+target_include_directories(fastlz PUBLIC ${fastlz_SOURCE_DIR})
 
 add_executable(noita-settings-dump
     main.cpp
