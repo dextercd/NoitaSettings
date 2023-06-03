@@ -37,8 +37,8 @@ target_link_libraries(noita-settings-common
 
 # Programs
 
-add_executable(noita-settings-dump main.cpp)
+add_executable(noita-settings-dump settings_main.cpp)
 target_link_libraries(noita-settings-dump PUBLIC noita-settings-common)
 
-add_executable(noita-decompress decompress.cpp)
+add_executable(noita-decompress decompress_main.cpp)
 target_link_libraries(noita-decompress PUBLIC noita-settings-common)
