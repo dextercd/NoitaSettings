@@ -24,8 +24,18 @@ add_library(fastlz
 
 target_include_directories(fastlz PUBLIC ${fastlz_SOURCE_DIR})
 
-add_executable(noita-settings-dump
-    main.cpp
+# Common
+
+add_library(noita-settings-common
+    utils.cpp
 )
 
-target_link_libraries(noita-settings-dump PUBLIC fastlz)
+target_link_libraries(noita-settings-common
+    PUBLIC
+        fastlz
+)
+
+# Programs
+
+add_executable(noita-settings-dump main.cpp)
+target_link_libraries(noita-settings-dump PUBLIC noita-settings-common)

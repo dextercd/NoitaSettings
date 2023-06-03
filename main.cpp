@@ -8,19 +8,7 @@
 #include <fastlz.h>
 
 #include "binops.hpp"
-
-std::string read_full_file(const char* path)
-{
-    std::string out;
-    std::ifstream stream(path, std::ios::binary);
-    while (stream) {
-        char buffer[1024];
-        stream.read(buffer, sizeof(buffer));
-        out.append(buffer, stream.gcount());
-    }
-
-    return out;
-}
+#include "utils.hpp"
 
 enum class setting_type {
     none = 0,
@@ -121,41 +109,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    std::string compressed = read_full_file(argv[1]);
-
-    if (compressed.size() < 8) {
-        std::cerr << "No compression file header.\n";
-        return 2;
-    }
-
-    auto compressed_size = read_le<std::uint32_t>(compressed.data());
-    auto decompressed_size = read_le<std::uint32_t>(compressed.data() + 4);
-
-    if (compressed.size() - 8 != compressed_size) {
-        std::cerr << "Bad compressed size.\n";
-        std::cerr << "  Expected: " << compressed_size << '\n';
-        std::cerr << "  Actual  : " << compressed.size() << '\n';
-        return 2;
-    }
-
-    std::string output_buffer(decompressed_size, '\0');
-    auto actual_size = fastlz_decompress(
-            compressed.data() + 8,
-            compressed_size,
-            output_buffer.data(),
-            output_buffer.size());
-
-    if (actual_size == 0) {
-        std::cerr << "Couldn't decompress file.\n";
-        return 2;
-    }
-
-    if (actual_size != output_buffer.size()) {
-        std::cerr << "Unexpected decompressed size.\n";
-        std::cerr << "  Expected: " << output_buffer.size() << '\n';
-        std::cerr << "  Actual  : " << actual_size << '\n';
-        return 3;
-    }
+    auto output_buffer = read_compressed_file(argv[1]);
 
     const char* it = output_buffer.data();
     const char* end = output_buffer.data() + output_buffer.size();
