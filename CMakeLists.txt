@@ -42,3 +42,14 @@ target_link_libraries(noita-settings-dump PUBLIC noita-settings-common)
 
 add_executable(noita-decompress decompress_main.cpp)
 target_link_libraries(noita-decompress PUBLIC noita-settings-common)
+
+find_package(SFML REQUIRED system window graphics)
+
+add_executable(noita-png-petri png_petri_main.cpp)
+target_link_libraries(noita-png-petri
+    PUBLIC
+        noita-settings-common
+        sfml-system
+        sfml-graphics
+        sfml-window
+)
