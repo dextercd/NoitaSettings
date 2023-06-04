@@ -2,6 +2,7 @@
 #define NOITA_SETTINGS_BINOPS_HPP
 
 #include <cstdint>
+#include <cstring>
 
 template<class T> T read_le(const void*);
 template<class T> T read_be(const void*);
@@ -56,6 +57,30 @@ inline std::uint64_t read_le<std::uint64_t>(const void* ptr)
         | (std::uint64_t)it[5] << 40
         | (std::uint64_t)it[6] << 48
         | (std::uint64_t)it[7] << 56;
+}
+
+template<>
+inline float read_be<float>(const void* ptr)
+{
+    float value;
+    auto data = read_be<std::uint32_t>(ptr);
+    std::memcpy(&value, &data, sizeof(data));
+    return value;
+}
+
+template<>
+inline double read_be<double>(const void* ptr)
+{
+    double value;
+    auto data = read_be<std::uint64_t>(ptr);
+    std::memcpy(&value, &data, sizeof(data));
+    return value;
+}
+
+template<>
+inline bool read_be<bool>(const void* ptr)
+{
+    return ((const char*)ptr)[0] != 0;
 }
 
 #endif // Header guard
