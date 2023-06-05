@@ -1,0 +1,54 @@
+on: push
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get build dependencies
+        run: |
+          C:/vcpkg/vcpkg install sfml:x86-windows-static
+
+      - name: Create build
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 10.0.22000.0 -vcvars_ver=14
+          mkdir build
+          cmake -S . -B build -G Ninja ^
+            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+            -DVCPKG_TARGET_TRIPLET=x86-windows-static ^
+            -DCMAKE_CXX_FLAGS="/D_WIN32_WINNT=0x0601 /DWINVER=0x0601 /DWIN32 /D_WINDOWS /EHsc /MD" ^
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Run build
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 10.0.22000.0 -vcvars_ver=14
+          cmake --build build
+
+      - name: Run CPack
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86 10.0.22000.0 -vcvars_ver=14
+          cd build
+          cpack
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: build/*.zip
+          retention-days: 2
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/release-')
+        with:
+          files: |
+            build/*.zip

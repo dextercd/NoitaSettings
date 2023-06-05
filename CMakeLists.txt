@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(noitasettings
+project(NoitaData
     HOMEPAGE_URL "https://github.com/dextercd/NoitaSettings"
     LANGUAGES C CXX
+    VERSION 0.1.0
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -53,3 +54,15 @@ target_link_libraries(noita-png-petri
         sfml-graphics
         sfml-window
 )
+
+install(TARGETS noita-settings-dump noita-decompress noita-png-petri
+    DESTINATION "NoitaData"
+    COMPONENT NoitaData
+)
+
+# Packaging
+set(CPACK_VERBATIM_VARIABLES TRUE)
+set(CPACK_GENERATOR ZIP)
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+include(CPack)
