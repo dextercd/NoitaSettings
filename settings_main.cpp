@@ -103,7 +103,7 @@ int main(int argc, char** argv)
             program_path = "noita-settings-dump";
 
         std::cerr << "Bad usage!\n";
-        std::cerr << "Example:\n  ";
+        std::cerr << "Example:\n";
         std::cerr << program_path << " <path to mod_settings.bin>" << '\n';
         return 1;
     }
