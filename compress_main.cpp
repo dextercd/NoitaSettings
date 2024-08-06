@@ -20,8 +20,8 @@ int main(int argc, char** argv)
     }
 
     if (argc == 2) {
-        std::cout << read_compressed_file(argv[1]);
+        std::cout << compress_data(read_file(argv[1]));
     } else {
-        std::cout << decompress_data(read_stream(std::cin));
+        std::cout << compress_data(read_stream(std::cin));
     }
 }

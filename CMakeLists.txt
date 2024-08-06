@@ -36,6 +36,11 @@ target_link_libraries(noita-settings-common
         fastlz
 )
 
+# Warnings
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    add_compile_options(-Wno-braced-scalar-init)
+endif()
+
 # Programs
 
 add_executable(noita-settings-dump settings_main.cpp)
@@ -43,6 +48,9 @@ target_link_libraries(noita-settings-dump PUBLIC noita-settings-common)
 
 add_executable(noita-decompress decompress_main.cpp)
 target_link_libraries(noita-decompress PUBLIC noita-settings-common)
+
+add_executable(noita-compress compress_main.cpp)
+target_link_libraries(noita-compress PUBLIC noita-settings-common)
 
 find_package(SFML REQUIRED system window graphics)
 
@@ -55,7 +63,9 @@ target_link_libraries(noita-png-petri
         sfml-window
 )
 
-install(TARGETS noita-settings-dump noita-decompress noita-png-petri
+install(
+    TARGETS
+        noita-settings-dump noita-decompress noita-compress noita-png-petri
     DESTINATION "NoitaData"
     COMPONENT NoitaData
 )

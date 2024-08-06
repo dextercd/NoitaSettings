@@ -3,9 +3,12 @@
 
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 
 template<class T> T read_le(const void*);
 template<class T> T read_be(const void*);
+
+template<class T> void write_le(void*, T value);
 
 template<>
 inline std::uint32_t read_be<std::uint32_t>(const void* ptr)
@@ -81,6 +84,22 @@ template<>
 inline bool read_be<bool>(const void* ptr)
 {
     return ((const char*)ptr)[0] != 0;
+}
+
+template<>
+inline void write_le<std::uint32_t>(void* destination, std::uint32_t value)
+{
+    auto d = (unsigned char*)destination;
+    d[0] = value; value >>= 8;
+    d[1] = value; value >>= 8;
+    d[2] = value; value >>= 8;
+    d[3] = value;
+}
+
+template<>
+inline void write_le<std::int32_t>(void* destination, std::int32_t value)
+{
+    return write_le(destination, (unsigned)value);
 }
 
 #endif // Header guard
