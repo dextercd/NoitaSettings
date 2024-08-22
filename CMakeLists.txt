@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 project(NoitaData
     HOMEPAGE_URL "https://github.com/dextercd/NoitaSettings"
     LANGUAGES C CXX
-    VERSION 0.1.0
+    VERSION 0.3.0
 )
 
 set(CMAKE_CXX_STANDARD 20)
