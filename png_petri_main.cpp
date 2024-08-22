@@ -6,6 +6,8 @@
 #include <vector>
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Keyboard.hpp>
 
 #include "binops.hpp"
 #include "utils.hpp"
@@ -183,20 +185,21 @@ int main(int argc, char** argv)
     // Display
     //
 
-    sf::Vector2f initial_display_sz(950.f, 800.f);
+    sf::Vector2f size(950.f, 800.f);
     sf::RenderWindow window(
-        sf::VideoMode(initial_display_sz.x, initial_display_sz.y),
+        sf::VideoMode(size.x, size.y),
         "World Viewer"
     );
 
     window.setVerticalSyncEnabled(true);
 
-    auto handle_resize = [&] (sf::Vector2f new_size) {
-        sf::View view(new_size / 2.f, new_size);
+    float zoom = 1;
+    float x = 0, y = 0;
+
+    auto set_view = [&] () {
+        sf::View view(sf::Vector2f(x, y), size / zoom);
         window.setView(view);
     };
-
-    handle_resize(initial_display_sz);
 
     sf::Texture world_texture;
     world_texture.create(0x200, 0x200);
@@ -243,9 +246,23 @@ int main(int argc, char** argv)
                 window.close();
 
             if (event.type == sf::Event::Resized) {
-                handle_resize(sf::Vector2f(event.size.width, event.size.height));
+                size = sf::Vector2f(event.size.width, event.size.height);
             }
         }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Add)
+        ||  sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Equal)) {
+            zoom += 0.02;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Subtract)) {
+            zoom -= 0.02;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))  x -= 1.f / zoom;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) x += 1.f / zoom;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))    y -= 1.f / zoom;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))  y += 1.f / zoom;
 
         window.clear(sf::Color::Black);
 
@@ -253,6 +270,7 @@ int main(int argc, char** argv)
         for (auto&& render_object : render_objects)
             window.draw(render_object.sprite);
 
+        set_view();
         window.display();
     }
 }
