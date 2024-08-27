@@ -21,12 +21,20 @@ class PixelScene:
 
 
 @dataclass
+class Image:
+    filename: str
+    x: int
+    y: int
+
+
+@dataclass
 class PixelSceneFile:
     version: int
     magic_num: int
 
     pending_list: list[PixelScene]
     placed_list: list[PixelScene]
+    background_images: list[Image]  # Always empty?
 
 
 def read_string(r: typing.BinaryIO):
@@ -45,21 +53,23 @@ def read_pixel_scene_file(read_stream: typing.BinaryIO) -> PixelSceneFile:
 
     pending_list = read_pixel_scene_list(read_stream)
     placed_list = read_pixel_scene_list(read_stream)
+    background_images = read_image_list(read_stream)
 
     return PixelSceneFile(
         version=version,
         magic_num=magic_num,
         pending_list=pending_list,
         placed_list=placed_list,
+        background_images=background_images,
     )
 
 
-def read_pixel_scene_list(read_stream: typing.BinaryIO):
+def read_pixel_scene_list(read_stream: typing.BinaryIO) -> list[PixelScene]:
     count = struct.unpack(">i", read_stream.read(4))[0]
     return [read_pixel_scene(read_stream) for _ in range(count)]
 
 
-def read_pixel_scene(read_stream: typing.BinaryIO):
+def read_pixel_scene(read_stream: typing.BinaryIO) -> PixelScene:
     x, y = struct.unpack(">ii", read.read(8))
     material_filename = read_string(read)
     colors_filename = read_string(read)
@@ -90,6 +100,21 @@ def read_pixel_scene(read_stream: typing.BinaryIO):
         clean_area_before=clean_area_before,
         DEBUG_RELOAD_ME=DEBUG_RELOAD_ME,
         color_material=color_material,
+    )
+
+
+def read_image_list(read_stream: typing.BinaryIO) -> list[Image]:
+    count = struct.unpack(">i", read_stream.read(4))[0]
+    return [read_image(read_stream) for _ in range(count)]
+
+
+def read_image(read_stream: typing.BinaryIO) -> Image:
+    x, y = struct.unpack(">ii", read.read(8))
+    filename = read_string(read)
+    return Image(
+        x=x,
+        y=y,
+        filename=filename,
     )
 
 
