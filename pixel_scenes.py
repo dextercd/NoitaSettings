@@ -38,13 +38,13 @@ class PixelSceneFile:
 
 
 def read_string(r: typing.BinaryIO):
-    length = struct.unpack(">i", r.read(4))[0]
+    (length,) = struct.unpack(">i", r.read(4))
     return r.read(length).decode("utf-8")
 
 
 def read_pixel_scene_file(read_stream: typing.BinaryIO) -> PixelSceneFile:
-    version = struct.unpack(">i", read_stream.read(4))[0]
-    magic_num = struct.unpack(">i", read_stream.read(4))[0]
+    version, magic_num = struct.unpack(">ii", read_stream.read(8))
+
     if magic_num != 0x2F0AA9F:
         raise Exception("Unsupported old pixel scenes binary file version")
 
@@ -65,7 +65,7 @@ def read_pixel_scene_file(read_stream: typing.BinaryIO) -> PixelSceneFile:
 
 
 def read_pixel_scene_list(read_stream: typing.BinaryIO) -> list[PixelScene]:
-    count = struct.unpack(">i", read_stream.read(4))[0]
+    (count,) = struct.unpack(">i", read_stream.read(4))
     return [read_pixel_scene(read_stream) for _ in range(count)]
 
 
@@ -104,7 +104,7 @@ def read_pixel_scene(read_stream: typing.BinaryIO) -> PixelScene:
 
 
 def read_image_list(read_stream: typing.BinaryIO) -> list[Image]:
-    count = struct.unpack(">i", read_stream.read(4))[0]
+    (count,) = struct.unpack(">i", read_stream.read(4))
     return [read_image(read_stream) for _ in range(count)]
 
 
