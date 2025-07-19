@@ -35,12 +35,10 @@ struct PhysicsObject {
 };
 
 struct RenderObject {
-    sf::Sprite sprite;
+    std::optional<sf::Sprite> sprite;
     std::unique_ptr<sf::Texture> texture;
     const PhysicsObject* physics_object;
 };
-
-const float degrees_in_radians = 57.2957795131;
 
 struct read_vec_uint32_result {
     const char* ptr;
@@ -187,7 +185,7 @@ int main(int argc, char** argv)
 
     sf::Vector2f size(950.f, 800.f);
     sf::RenderWindow window(
-        sf::VideoMode(size.x, size.y),
+        sf::VideoMode({(unsigned)size.x, (unsigned)size.y}),
         "World Viewer"
     );
 
@@ -202,7 +200,7 @@ int main(int argc, char** argv)
     };
 
     sf::Texture world_texture;
-    world_texture.create(0x200, 0x200);
+    world_texture.resize({0x200, 0x200});
     auto custom_color_it = custom_world_colors.begin();
     for (int i = 0; i != 512 * 512; ++i) {
         auto posx = i % 512;
@@ -211,13 +209,15 @@ int main(int argc, char** argv)
         auto custom_color = (hp_values_q[i] & 0x80) != 0;
         if (custom_color) {
             std::uint32_t color = *custom_color_it;
-            world_texture.update((unsigned char*)&color, 1, 1, posx, posy);
+            world_texture.update((unsigned char*)&color, {1, 1}, {(unsigned)posx, (unsigned)posy});
             ++custom_color_it;
+        } else if (material_names[material] != "air") {
+            std::uint8_t rgba[] = {0xff, 0, 0xff, 0xff};
+            world_texture.update(rgba, {1, 1}, {(unsigned)posx, (unsigned)posy});
         }
     }
 
-    sf::Sprite world_sprite;
-    world_sprite.setTexture(world_texture);
+    sf::Sprite world_sprite{world_texture};
 
     std::vector<RenderObject> render_objects;
     for (const auto& physics_object : physics_objects) {
@@ -226,12 +226,12 @@ int main(int argc, char** argv)
         ro.physics_object = &physics_object;
 
         ro.texture = std::make_unique<sf::Texture>();
-        ro.texture->create(physics_object.width, physics_object.height);
+        ro.texture->resize({physics_object.width, physics_object.height});
         ro.texture->update((unsigned char*)physics_object.colors.data());
 
-        ro.sprite.setTexture(*ro.texture);
-        ro.sprite.setPosition({physics_object.x - 512, physics_object.y});
-        ro.sprite.setRotation(physics_object.rot_radians * degrees_in_radians);
+        ro.sprite = sf::Sprite{*ro.texture};
+        ro.sprite->setPosition({physics_object.x - 512, physics_object.y});
+        ro.sprite->setRotation(sf::radians(physics_object.rot_radians));
     }
 
     std::sort(std::begin(render_objects), std::end(render_objects),
@@ -240,13 +240,12 @@ int main(int argc, char** argv)
         });
 
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>())
                 window.close();
 
-            if (event.type == sf::Event::Resized) {
-                size = sf::Vector2f(event.size.width, event.size.height);
+            if (auto resized = event->getIf<sf::Event::Resized>()) {
+                size = sf::Vector2f(resized->size.x, resized->size.y);
             }
         }
 
@@ -268,7 +267,8 @@ int main(int argc, char** argv)
 
         window.draw(world_sprite);
         for (auto&& render_object : render_objects)
-            window.draw(render_object.sprite);
+            if (render_object.sprite)
+                window.draw(*render_object.sprite);
 
         set_view();
         window.display();
